@@ -112,6 +112,21 @@ public class ShopController {
 				favorite = favoriteRepository.findByShopAndUser(shop, user);
 			}
 		}
+		
+		System.out.println("Monday Opening Hours: " + shop.getMondayOpeningHours());
+		System.out.println("Monday Closing Hours: " + shop.getMondayClosingHours());
+		System.out.println("Tuesday Opening Hours: " + shop.getTuesdayOpeningHours());
+		System.out.println("Tuesday Closing Hours: " + shop.getTuesdayClosingHours());
+		System.out.println("Wednesday Opening Hours: " + shop.getWednesdayOpeningHours());
+		System.out.println("Wednesday Closing Hours: " + shop.getWednesdayClosingHours());
+		System.out.println("Thursday Opening Hours: " + shop.getThursdayOpeningHours());
+		System.out.println("Thursday Closing Hours: " + shop.getThursdayClosingHours());
+		System.out.println("Friday Opening Hours: " + shop.getFridayOpeningHours());
+		System.out.println("Friday Closing Hours: " + shop.getFridayClosingHours());
+		System.out.println("Saturday Opening Hours: " + shop.getSaturdayOpeningHours());
+		System.out.println("Saturday Closing Hours: " + shop.getSaturdayClosingHours());
+		System.out.println("Sunday Opening Hours: " + shop.getSundayOpeningHours());
+		System.out.println("Sunday Closing Hours: " + shop.getSundayClosingHours());
 
 		Page<Review> reviewPage = reviewRepository.findByShopOrderByCreatedAtDesc(shop, pageable);
 
@@ -139,14 +154,19 @@ public class ShopController {
 	}
 
 	private void addDayWithHours(List<String> list, String day, String openingHours, String closingHours) {
-	    if (openingHours != null && closingHours != null) {
-	        list.add(day + ":" + openingHours + "〜" + closingHours);
-	    } else if (openingHours != null) {
-	        list.add(day + ":" + openingHours + "〜");
-	    } else if (closingHours != null) {
-	        list.add(day + ":〜" + closingHours);
-	    } else {
-	        list.add(day + ":"); // または "定休日" のような文字列を追加
+	    if (openingHours != null && !openingHours.isEmpty() && closingHours != null && !closingHours.isEmpty()) {
+	        // 時間のフォーマットを修正
+	        String formattedOpeningHours = formatTime(openingHours);
+	        String formattedClosingHours = formatTime(closingHours);
+	        list.add(day + ":" + formattedOpeningHours + "〜" + formattedClosingHours);
 	    }
+	    // 開店時間または閉店時間のどちらか一方でも欠けている場合はリストに追加しない
+	}
+
+	private String formatTime(String time) {
+	    if (time != null && time.length() == 4) {
+	        return time.substring(0, 2) + ":" + time.substring(2, 4);
+	    }
+	    return time; // その他の形式の場合はそのまま返す
 	}
 }

@@ -20,7 +20,7 @@ public class WebSecurityConfig {
 		http
 				.requestCache(AbstractHttpConfigurer::disable)
 				.authorizeHttpRequests((requests) -> requests
-						.requestMatchers("/css/**", "/images/**", "/js/**", "/storage/**", "/", "/signup/**","/shops","/shops/{id}","/stripe/webhook", "/houses/{id}/reviews", "/request", "/reset-password/form")
+						.requestMatchers("/css/**", "/images/**", "/js/**", "/storage/**", "/", "/signup/**","/shops","/shops/{id}","/stripe/webhook", "/houses/{id}/reviews", "/request", "/reset-password/form", "/reset-password")
 						.permitAll()
 						.requestMatchers("/admin/**").hasRole("ADMIN")
 						.requestMatchers("/paid/**").hasRole("PAID") // 有料会員のみアクセス可能

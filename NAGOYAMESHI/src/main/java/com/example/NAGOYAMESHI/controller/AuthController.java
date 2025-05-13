@@ -1,6 +1,7 @@
 package com.example.NAGOYAMESHI.controller;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -29,22 +30,19 @@ public class AuthController {
 	private final UserService userService;
 	private final SignupEventPublisher signupEventPublisher;
 	private final VerificationTokenService verificationTokenService;
-    private final PasswordResetTokenService passwordResetTokenService;
-    private final PasswordResetEventPublisher passwordResetEventPublisher;
+	private final PasswordResetTokenService passwordResetTokenService;
+	private final PasswordResetEventPublisher passwordResetEventPublisher;
 
-
-	
-	public AuthController(UserService userService, SignupEventPublisher signupEventPublisher,PasswordResetEventPublisher passwordResetEventPublisher,
+	public AuthController(UserService userService, SignupEventPublisher signupEventPublisher,
+			PasswordResetEventPublisher passwordResetEventPublisher,
 			VerificationTokenService verificationTokenService, PasswordResetTokenService passwordResetTokenService) {
 		this.userService = userService;
 		this.signupEventPublisher = signupEventPublisher;
 		this.verificationTokenService = verificationTokenService;
 		this.passwordResetTokenService = passwordResetTokenService;
-		this.passwordResetEventPublisher= passwordResetEventPublisher;
+		this.passwordResetEventPublisher = passwordResetEventPublisher;
 
 	}
-	
-	
 
 	@GetMapping("/login")
 	public String login() {
@@ -100,75 +98,75 @@ public class AuthController {
 
 		return "auth/verify";
 	}
-	
+
 	@GetMapping("/request")
 	public String request(Model model) {
 		model.addAttribute("requestForm", new RequestForm());
 		return "auth/password-reset-request";
 
 	}
-	
-	 @PostMapping("/request")
-	    public String handlePasswordResetRequest(@RequestParam("email") String email, Model model, HttpServletRequest httpServletRequest) {
-	        User user = passwordResetTokenService.findUserByEmail(email);
 
-	        if (user == null) {
-	            model.addAttribute("error", "登録されていないメールアドレスです。");
-	            return "auth/password-reset-request";
-	        }
+	@PostMapping("/request")
+	public String handlePasswordResetRequest(@RequestParam("email") String email, Model model,
+			HttpServletRequest httpServletRequest) {
+		User user = passwordResetTokenService.findUserByEmail(email);
 
-	        System.out.println("User found: " + user.getId() + ", " + user.getEmail()); // ログ出力
+		if (user == null) {
+			model.addAttribute("error", "登録されていないメールアドレスです。");
+			return "auth/password-reset-request";
+		}
 
-	        String requestUrl = httpServletRequest.getRequestURL().toString();
-	        passwordResetEventPublisher.publishPasswordResetEvent(user, requestUrl);
+		System.out.println("User found: " + user.getId() + ", " + user.getEmail()); // ログ出力
 
-	        model.addAttribute("message", "パスワード再設定用のメールを送信しました。ご確認ください。");
-	        return "auth/passwordResetConfirmation"; // メール送信完了画面
-	    }
-	
-	 @GetMapping("/reset-password/form")
-	    public String showPasswordResetForm(@RequestParam("token") String token, Model model) {
-	        System.out.println("Token received in showPasswordResetForm: " + token); // ← ここに追加
- 
-		 
-		 PasswordResetToken passwordResetToken = passwordResetTokenService.getPasswordResetToken(token);
+		String requestUrl = httpServletRequest.getRequestURL().toString();
+		passwordResetEventPublisher.publishPasswordResetEvent(user, requestUrl);
 
-	        if (passwordResetToken == null) {
-	            model.addAttribute("error", "無効なパスワード再設定トークンです。");
-	            return "auth/password-reset-error"; // エラー画面
-	        }
-
-	        model.addAttribute("token", token);
-	        return "auth/reset-password";
-	    }
-
-	    @PostMapping("/reset-password")
-	    public String updatePassword(@RequestParam("token") String token,
-	                                 @RequestParam("newPassword") String newPassword,
-	                                 @RequestParam("confirmPassword") String confirmPassword,
-	                                 Model model) {
-
-	        if (!newPassword.equals(confirmPassword)) {
-	            model.addAttribute("error", "新しいパスワードと確認用パスワードが一致しません。");
-	            model.addAttribute("token", token);
-	            return "auth/reset-password-form";
-	        }
-
-	        PasswordResetToken passwordResetToken = passwordResetTokenService.getPasswordResetToken(token);
-
-	        if (passwordResetToken == null) {
-	            model.addAttribute("error", "無効なパスワード再設定トークンです。");
-	            return "auth/password-reset-error"; // エラー画面
-	        }
-
-	        User user = passwordResetToken.getUser();
-	        userService.updatePassword(user, newPassword);
-
-	        // パスワードリセットトークンを削除 (任意)
-	        passwordResetTokenService.delete(passwordResetToken);
-
-	        model.addAttribute("message", "パスワードが正常に更新されました。");
-	        return "auth/password-reset-success"; // パスワード更新成功画面
-	    }
+		model.addAttribute("message", "パスワード再設定用のメールを送信しました。ご確認ください。");
+		return "auth/passwordResetConfirmation"; // メール送信完了画面
 	}
-	
+
+	@GetMapping("/reset-password/form")
+	public String showPasswordResetForm(@RequestParam("token") String token, Model model) {
+		System.out.println("Token received in showPasswordResetForm: " + token); // ← ここに追加
+
+		PasswordResetToken passwordResetToken = passwordResetTokenService.getPasswordResetToken(token);
+
+		if (passwordResetToken == null) {
+			model.addAttribute("error", "無効なパスワード再設定トークンです。");
+			return "auth/password-reset-error"; // エラー画面
+		}
+
+		model.addAttribute("token", token);
+		return "auth/reset_password";
+	}
+
+	@PostMapping("/reset-password")
+	@Transactional
+	public String updatePassword(@RequestParam("token") String token,
+			@RequestParam("newPassword") String newPassword,
+			@RequestParam("confirmPassword") String confirmPassword,
+			Model model) {
+
+		if (!newPassword.equals(confirmPassword)) {
+			model.addAttribute("error", "新しいパスワードと確認用パスワードが一致しません。");
+			model.addAttribute("token", token);
+			return "auth/reset_password_form";
+		}
+
+		PasswordResetToken passwordResetToken = passwordResetTokenService.getPasswordResetToken(token);
+
+		if (passwordResetToken == null) {
+			model.addAttribute("error", "無効なパスワード再設定トークンです。");
+			return "auth/password-reset-error"; // エラー画面
+		}
+
+		User user = passwordResetToken.getUser();
+		userService.updatePassword(user, newPassword);
+
+		// パスワードリセットトークンを削除 (任意)
+		passwordResetTokenService.delete(passwordResetToken);
+
+		model.addAttribute("message", "パスワードが正常に更新されました。");
+		return "auth/password-reset-success"; // パスワード更新成功画面
+	}
+}
