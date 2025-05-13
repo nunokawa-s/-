@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>NAGOYAMESI</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+	<div class="samuraitravel-wrapper">
+		<header>
+			<h1>NAGOYAMESI</h1>
+		</header>
+
+		<p id="tabcontrol">
+			<a href="#tabpage1">タブ1</a>
+			<a href="#tabpage2">タブ2</a>
+			<a href="#tabpage3">タブ3</a>
+			<a href="#tabpage4">タブ4</a>
+			<a href="#tabpage5">タブ5</a>
+		</p>
+		<div id="tabbody">
+			<div id="tabpage1">タブ1の中身</div>
+			<div id="tabpage2">タブ2の中身</div>
+			<div id="tabpage3">タブ3の中身</div>
+			<div id="tabpage4">タブ4の中身</div>
+			<div id="tabpage5">タブ5の中身</div>
+		</div>
+
+		
+		<!-- フッター -->
+		<div th:replace="~{fragment :: footer}"></div>
+	</div>
+
+	<div th:replace="~{fragment :: scripts}"></div>
+</body>
+
+</html>
